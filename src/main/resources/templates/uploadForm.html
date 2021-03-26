@@ -1,0 +1,48 @@
+<html xmlns:th="https://www.thymeleaf.org">
+<head>
+    <title>Hello jQuery</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script script type="text/javascript" th:src="@{/js/main.js}" ></script>
+</head>
+<body>
+
+<p th:text="${#request.getParameter('q')}" th:unless="${#request.getParameter('q') == null}">Test</p>
+
+<div th:if="${message}">
+    <h2 th:text="${message}"/>
+</div>
+
+<div>
+    <form method="POST" enctype="multipart/form-data" action="/">
+        <table>
+            <tr><td>File to upload:</td><td><input type="file" name="file" /></td></tr>
+            <tr><td>Timeout:</td><td><input type="number" name="timeout" /></td></tr>
+
+            <tr><td></td><td><input type="submit" value="Upload" /></td></tr>
+        </table>
+    </form>
+</div>
+<!--Aquí va lo que saldría de consola -->
+
+<div method="POST" action="/">
+    <div th:if="${consolemsg}">
+        <h3 th:text="${consolemsg}"/>
+    </div>
+</div>
+
+<div>
+    <ul>
+        <li th:each="file : ${files}">
+            <a th:href="${file}" th:text="${file}" />
+        </li>
+    </ul>
+</div>
+
+<div>
+    <div th:if="${consolemsg}">
+        <h3 th:text="${consolemsg}"/>
+    </div>
+</div>
+
+</body>
+</html>

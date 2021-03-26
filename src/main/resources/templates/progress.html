@@ -1,0 +1,19 @@
+<html xmlns:th="https://www.thymeleaf.org">
+<head>
+    <title>Hello jQuery</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script script type="text/javascript" th:src="@{/js/main.js}" ></script>
+</head>
+    <body>
+<script>
+    function reqListener () {
+        console.log(this.responseText);
+    }
+
+    var oReq = new XMLHttpRequest();
+    oReq.addEventListener("load", reqListener);
+    oReq.open("GET", "C:\\Users\\MariajoseR\\Downloads\\UploadDocs\\logs\\917c6ee0-183a-41b6-8881-8f41bb0f6b0b-OUT.txt");
+    oReq.send();;
+</script>
+    </body>
+</html>

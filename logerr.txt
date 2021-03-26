@@ -1,0 +1,8 @@
+log4j:WARN No appenders could be found for logger (ai.libs.mlplan.cli.MLPlanCLI).
+log4j:WARN Please initialize the log4j system properly.
+log4j:WARN See http://logging.apache.org/log4j/1.2/faq.html#noconfig for more info.
+weka.core.Version: Unable to load version information!
+mar. 17, 2021 5:10:42 P. M. com.github.fommil.netlib.ARPACK <clinit>
+WARNING: Failed to load implementation from: com.github.fommil.netlib.NativeSystemARPACK
+mar. 17, 2021 5:10:42 P. M. com.github.fommil.netlib.ARPACK <clinit>
+WARNING: Failed to load implementation from: com.github.fommil.netlib.NativeRefARPACK

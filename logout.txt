@@ -1,0 +1,2 @@
+Called ML-Plan CLI with the following params: >[-f, C:\Users\Mariajosé R\Downloads\UploadDocs\upload-dir\waveform.arff, -t, 40, -om, C:\Users\Mariajosé R\Downloads\UploadDocs\serializedObjects\784998db-ca3f-47d4-a0a4-7806c43c5190.mod]<
+Logger name is ai.libs.mlplan.cli.MLPlanCLI. If logger works properlym the next line should contain an INFO-level message.
