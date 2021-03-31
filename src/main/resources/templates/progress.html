@@ -1,19 +1,64 @@
 <html xmlns:th="https://www.thymeleaf.org">
 <head>
-    <title>Hello jQuery</title>
+    <title>Progress</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-    <script script type="text/javascript" th:src="@{/js/main.js}" ></script>
+    <script script type="text/javascript" th:src="@{/js/main.js}"></script>
+
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100;400&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: "JetBrains Mono", serif;
+            font-size: 12px;
+        }
+    </style>
 </head>
-    <body>
+<body>
+<h1>Training logs</h1>
+<div style="white-space: nowrap; float: left; background-color: #1f1f1f; overflow-x: scroll; overflow-y: scroll; width: 98vw; height: 92vh" id="joe"></div>
 <script>
-    function reqListener () {
-        console.log(this.responseText);
+    const joeDiv = document.getElementById('joe')
+    let lastLine = 0
+
+    updateLogs = () => {
+        const request = new XMLHttpRequest()
+        request.open('GET', `${window.location.origin}/logs/${lastLine}`, true);
+        request.responseType = 'json'
+        request.onloadend = () => {
+            if (request.status === 200) {
+                const listOfLogs = request.response
+                for (let i = 0; i < listOfLogs.length; i++) {
+                    const lineNumberSpan = document.createElement('span')
+                    lineNumberSpan.textContent = `${i + lastLine}) `
+                    lineNumberSpan.style = 'color: yellow'
+
+                    const logContentSpan = document.createElement('span')
+                    logContentSpan.textContent = listOfLogs[i]
+                    logContentSpan.style = 'color: white'
+
+                    const breakLine = document.createElement('br')
+
+                    const paragraph = document.createElement('p')
+                    paragraph.append(lineNumberSpan, logContentSpan, breakLine)
+                    paragraph.style = 'margin: 1px, 0'
+
+                    joeDiv.append(paragraph)
+                }
+                lastLine += listOfLogs.length
+                joeDiv.scrollTop = joeDiv.scrollHeight // keep at bottom of logs
+
+                // TODO: check for end condition
+                setTimeout(() => {
+                    updateLogs()
+                }, 1000)
+            } else {
+                alert('Log update went wrong, no further attempts will be made to update logs.')
+            }
+        }
+        request.send();
     }
 
-    var oReq = new XMLHttpRequest();
-    oReq.addEventListener("load", reqListener);
-    oReq.open("GET", "C:\\Users\\MariajoseR\\Downloads\\UploadDocs\\logs\\917c6ee0-183a-41b6-8881-8f41bb0f6b0b-OUT.txt");
-    oReq.send();;
+    updateLogs()
 </script>
-    </body>
+</body>
 </html>

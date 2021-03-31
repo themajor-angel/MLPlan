@@ -29,6 +29,7 @@ import static java.util.UUID.randomUUID;
 public class FileUploadController {
 
     private final StorageService storageService;
+    private List<String> logs = null;
 
     @Autowired
     public FileUploadController(StorageService storageService) {
@@ -55,6 +56,12 @@ public class FileUploadController {
                 "attachment; filename=\"" + file.getFilename() + "\"").body(file);
     }
 
+    @GetMapping("/logs/{startLine}")
+    @ResponseBody
+    public List<String> getLogs(@PathVariable int startLine) {
+        return logs.subList(startLine, logs.size());
+    }
+
 
 
     @PostMapping("/")
@@ -67,27 +74,37 @@ public class FileUploadController {
 
         UUID serialversionUID = randomUUID();
         /*Path donde se guardan los objetos serializados*/
-        String path = "C:\\Users\\Mariajosé R\\Downloads\\UploadDocs\\serializedObjects\\";
+        String path = "./mods/";
         String fileName = path + serialversionUID + ".mod";
 
-        try{
-            File datasetFile = resource.getFile();
-            String pathToFile = datasetFile.getPath();
+        Thread thread = new Thread(() -> {
+            try {
+                File datasetFile = resource.getFile();
+                String pathToFile = datasetFile.getPath();
 
-            File serializedFile = new File(fileName);
-            serializedFile.createNewFile();
+                File serializedFile = new File(fileName);
+                serializedFile.createNewFile();
 
-            createClassifier(pathToFile, time, fileName, serialversionUID);
-        }
-        catch(Exception e){
-            System.out.print(e);
-        }
-        redirectAttributes.addFlashAttribute("message",
-                "You successfully uploaded " + file.getOriginalFilename() + "!");
+                createClassifier(pathToFile, time, fileName, serialversionUID);
+            }
+            catch(Exception e) {
+                System.out.println("An error was thrown while attempting to upload a dataset:");
+                e.printStackTrace();
+            }
+        });
+        thread.start();
 
-        return "redirect:/";
+//        redirectAttributes.addFlashAttribute("message",
+//                "You successfully uploaded " + file.getOriginalFilename() + "!");
+
+        return "redirect:/progress";
     }
 
+    // TODO: Accept a uuid to filter logs for a specific process
+    @GetMapping("/progress")
+    public String progress() {
+        return "progress";
+    }
 
     @RequestMapping(value="/predict", method=RequestMethod.POST, params="action=predict")
     public String predict() {
@@ -99,17 +116,17 @@ public class FileUploadController {
         return ResponseEntity.notFound().build();
     }
 
-    public String createClassifier(String dataFile, int timeout, String fileName, UUID id) throws IOException, InterruptedException {
+    public void createClassifier(String dataFile, int timeout, String fileName, UUID id) throws IOException, InterruptedException {
 
         /*Path al Jar*/
-        File jar = new File("C:\\Users\\MariajoseR\\Downloads\\mlplan-full-builderhelper\\mlplan-full-builderhelper\\cli\\mlplan-cli-0.2.4.jar");
-        /*Path  donde se encuentra las configuraciones de log*/
-        String configPath = "C:\\Users\\MariajoseR\\Downloads\\UploadDocs\\conf\\log4j.xml";
-        String logConfigLevel = "-D"+"\""+"log4j.info"+"\"";
-        String logConfigFile = "-D"+"\""+"log4j.configuration=file:"+ configPath + "\"";
+        File jar = new File("./mlplan-cli-0.2.4.jar");
+        /*This yields the full system path (with the file: protocol) for Log4J configuration*/
+        String fullConfigUrl = ClassLoader.getSystemResource("./conf/log4j.xml").toString();
+        String logConfigLevel = "-D" + "\"" + "log4j.info" + "\"";
+        String logConfigFile = "-D" + "\"" + "log4j.configuration=" + fullConfigUrl + "\"";
         /*Path  donde guarda los mensajes de consola de cada archivo serializado*/
-        String pathToLogOutFile = "C:\\Users\\MariajoseR\\Downloads\\UploadDocs\\logs\\" + id + "-OUT.txt";
-        String pathToLogErrFile = "C:\\Users\\MariajoseR\\Downloads\\UploadDocs\\logs\\" + id + "-ERROR.txt";
+        String pathToLogOutFile = "./upload-docs/logs/" + id + "-OUT.txt";
+        String pathToLogErrFile = "./upload-docs/logs/" + id + "-ERROR.txt";
         File logOutputFile = new File(pathToLogOutFile);
         File logErrorFile = new File(pathToLogErrFile);
         String dataFileCom = "\"" + dataFile + "\"";
@@ -121,22 +138,23 @@ public class FileUploadController {
 
         ProcessBuilder pb = new ProcessBuilder(args);
         pb.redirectOutput(logOutputFile).redirectError(logErrorFile);
-        pb.directory(new File("C:\\Users\\MariajoseR\\Downloads\\UploadDocs"));
+        pb.directory(new File("./upload-docs"));
+
+        // TODO: assign uuid to file and return that and use it as an argument for /progress when redirecting
+        File outputFile = new File("./upload-docs/logs/joe-mama.log");
+        outputFile.createNewFile();
+
+        /* use (in both) ProcessBuilder.Redirect.INHERIT for getting logs on console*/
+        pb.redirectOutput(outputFile);
+        pb.redirectError(outputFile);
         Process p = pb.start();
 
-        /*este ciclo se llama en llama en javascript cliente*/
-        while(p.isAlive()){
-            System.out.println("Process still running");
-
+        // update in-memory logs every second
+        while (p.isAlive()) {
+            BufferedReader bufferedReader = new BufferedReader(new FileReader(outputFile));
+            logs = bufferedReader.lines().collect(Collectors.toList());
+            //System.out.println(logs.size());
             Thread.sleep(1000);
-
         }
-        System.out.println("Process finished");
-        // debe retornar la html se pasa el id no lo hace porque se mantiene la conexion abierta
-        // programar en javascript
-        
-        return "/";
     }
-
-
 }
